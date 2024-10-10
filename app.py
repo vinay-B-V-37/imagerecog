@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify 
 import os
 import shutil
 import face_recognition
@@ -15,17 +15,30 @@ load_dotenv()
 # Initialize the Flask app
 app = Flask(__name__)
 
-# Get secret key and Firebase admin key path from environment variables
+# Get secret key from environment variables
 SECRET_KEY = os.getenv('SECRET_KEY', 'defaultsecretkey')
-FIREBASE_ADMIN_KEY_PATH = os.getenv('FIREBASE_ADMIN_KEY_PATH', 'default-path.json')
 
 # Ensure upload folder exists
 UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-# Firebase setup
-cred = credentials.Certificate(FIREBASE_ADMIN_KEY_PATH)
+# Firebase setup with credentials from environment variables
+firebase_cred = {
+    "type": os.getenv('FIREBASE_TYPE'),
+    "project_id": os.getenv('FIREBASE_PROJECT_ID'),
+    "private_key_id": os.getenv('FIREBASE_PRIVATE_KEY_ID'),
+    "private_key": os.getenv('FIREBASE_PRIVATE_KEY').replace("\\n", "\n"),  # Replace escaped newlines with actual newlines
+    "client_email": os.getenv('FIREBASE_CLIENT_EMAIL'),
+    "client_id": os.getenv('FIREBASE_CLIENT_ID'),
+    "auth_uri": os.getenv('FIREBASE_AUTH_URI'),
+    "token_uri": os.getenv('FIREBASE_TOKEN_URI'),
+    "auth_provider_x509_cert_url": os.getenv('FIREBASE_AUTH_PROVIDER_X509_CERT_URL'),
+    "client_x509_cert_url": os.getenv('FIREBASE_CLIENT_X509_CERT_URL'),
+    "universe_domain": os.getenv('FIREBASE_UNIVERSE_DOMAIN')
+}
+
+cred = credentials.Certificate(firebase_cred)
 firebase_app = initialize_app(cred)
 db = firestore.client()
 
