@@ -110,3 +110,28 @@ def process_images_from_urls_in_batches(reference_encoding, image_urls, batch_si
     return matching_images
 
 # Main entry point for the application
+if __name__ == "__main__":
+    # Check if running in production
+    if os.getenv("FLASK_ENV") == "production":
+        # Use Gunicorn in production
+        from gunicorn.app.base import BaseApplication
+        class FlaskApplication(BaseApplication):
+            def __init__(self, app, options=None):
+                self.app = app
+                self.options = options or {}
+                super().__init__()
+            def load_config(self):
+                for key, value in self.options.items():
+                    self.cfg.set(key, value)
+            def load(self):
+                return app
+        # Example configuration for Gunicorn
+        options = {
+            "bind": "0.0.0.0:8000",
+            "workers": 4,
+            "worker_class": "gthread",
+        }
+        FlaskApplication(app, options).run()
+    else:
+        # Run the Flask app in development mode
+        app.run(debug=True)
